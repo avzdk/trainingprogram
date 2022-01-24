@@ -13,11 +13,11 @@ class Traininglog():
 
     @property
     def firstdate(self):
-        self.activities[0].date
+        return self.activities[0].date
 
     @property
     def lastdate(self):
-        self.activities[-1].date
+        return self.activities[-1].date
 
     
     def readcsvfile(self,filename):
@@ -27,7 +27,6 @@ class Traininglog():
             date=datetime.datetime.strptime(row[0], "%d/%m/%Y").date()
             distance=float(row[1])
             time=float(row[2][0:2])*60+float(row[2][3:5])+float(row[2][6:8])/60
-            print(time)
             activity=Activity(date,distance,time)        
             self.activities.append(activity)
         self._sortlist()
@@ -39,3 +38,5 @@ if __name__ == "__main__":
     traininglog.readcsvfile(FILENAME)
     for i in traininglog.activities:
         print(i)
+    print(traininglog.firstdate)
+    print(traininglog.lastdate)
