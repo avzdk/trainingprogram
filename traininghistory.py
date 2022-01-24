@@ -24,7 +24,7 @@ class Traininglog():
         reader = csv.reader(open(filename), delimiter=";")
         next(reader, None)  # skip the headers
         for row in reader:
-            date=datetime.datetime.strptime(row[0], "%d/%m/%Y").date()
+            date=datetime.datetime.strptime(row[0], "%d/%m/%Y").date()            
             distance=float(row[1])
             time=float(row[2][0:2])*60+float(row[2][3:5])+float(row[2][6:8])/60
             activity=Activity(date,distance,time)        
