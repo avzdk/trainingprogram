@@ -1,0 +1,2 @@
+from activity import Activity
+from traininghistory import Traininglog
