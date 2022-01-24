@@ -16,6 +16,7 @@ class TrainingPhase():
         TrainingPhase.next_phasenumber=TrainingPhase.next_phasenumber+1
 
     def insert(self,activity):
+        # checker om datoen passer og indsætter hvis ok
         if activity.date >= self.startdate and activity.date <= self.enddate:
             self.activities.append(activity)
             return True
@@ -25,6 +26,8 @@ class TrainingPhase():
         return f"Phase: {self.startdate}-{self.enddate}  {self.status} {len(self.activities)}"
 
     def get_dataframe(self):
+        ''' Samler data fra alle aktiviteter og returnerer en liste
+        der tilføjes kolonner med data fra fasen som er ens for alle aktiviteter'''
         df=pd.DataFrame()
         for activity in self.activities:
             df = pd.concat([df,activity.get_dataframe()])
@@ -44,6 +47,9 @@ class TrainingPlan():
         None
 
     def create_calender(self,extraweeks=0):
+        ''' Danner en "kalender" med de faser der skal til, inkl. historiske fraser markeret med "done"
+        Der fyldes ikke data i på nuværende tidspunkt. det er selvstændig funktion.
+        '''
         print(f"CHECK {self.history.lastdate-self.history.firstdate}")
         startdate=self.history.firstdate
         # startdate er mandagen i første uge med træning.
@@ -64,10 +70,14 @@ class TrainingPlan():
         return self.phases
 
     def insert_activity(self,activity):
+        '''Forsøger at indsætte en aktivitet i alle phaser. Den checker om lovlit. Hvis det lykkes så stoppes loopet
+        '''
         for phase in self.phases:
             if phase.insert(activity) == True: break
     
     def load_history(self):
+        '''Indsætter hele historikken i den oprettede kalender
+        '''
         for activity in self.history.activities: self.insert_activity(activity)
         return self.phases
 
@@ -77,8 +87,7 @@ class TrainingPlan():
             df = pd.concat([df,phase.get_dataframe()])
         return df
 
-        # dan kalender med phaser inkl. historik
-        
+
 
 
 

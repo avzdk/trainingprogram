@@ -18,6 +18,8 @@ class Activity():
         return d
 
     def get_dataframe(self):
+        ''' danner en df med én række
+        '''
         df = pd.DataFrame(columns=['date','distance'])
         df.loc[0] = [self.date,self.distance]
         return df
