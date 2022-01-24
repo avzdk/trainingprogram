@@ -1,14 +1,19 @@
 import datetime
+import pandas as pd
 from activity import Activity
 from traininghistory import Traininglog
+from chart import plot
 
 class TrainingPhase():
+    next_phasenumber=1
 
     def __init__(self,startdate,status,length=14):
         self.startdate=startdate
         self.enddate=startdate+datetime.timedelta(days=length-1)
         self.status = status #planned, done
         self.activities =[]
+        self.phasenumber =TrainingPhase.next_phasenumber
+        TrainingPhase.next_phasenumber=TrainingPhase.next_phasenumber+1
 
     def insert(self,activity):
         if activity.date >= self.startdate and activity.date <= self.enddate:
@@ -19,6 +24,14 @@ class TrainingPhase():
     def __str__(self):
         return f"Phase: {self.startdate}-{self.enddate}  {self.status} {len(self.activities)}"
 
+    def get_dataframe(self):
+        df=pd.DataFrame()
+        for activity in self.activities:
+            df = pd.concat([df,activity.get_dataframe()])
+            df['phase_status']=self.status 
+            df['phase_startdate']=self.startdate
+            df['phase_number']=self.phasenumber
+        return df
 
 class TrainingPlan():
 
@@ -57,7 +70,12 @@ class TrainingPlan():
     def load_history(self):
         for activity in self.history.activities: self.insert_activity(activity)
         return self.phases
-        
+
+    def get_dataframe(self):
+        df=pd.DataFrame()
+        for phase in self.phases:
+            df = pd.concat([df,phase.get_dataframe()])
+        return df
 
         # dan kalender med phaser inkl. historik
         
@@ -73,4 +91,7 @@ if __name__ == "__main__":
     a=plan.create_calender(10)
     #for p in a: print(p)
     phases=plan.load_history()
-    for i in phases: print(i)
+    print(plan.get_dataframe())
+    plotter=plot()
+    plotter.draw(plan.get_dataframe())
+    
