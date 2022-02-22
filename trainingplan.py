@@ -214,7 +214,7 @@ if __name__ == "__main__":
     #print(number_of_activities, distance_sum, distance_max)
     inputphases=plan.phases  # hele historikken
     plan.planweeks(plan.phases)
-    for i in range(0,10):
+    for i in range(0,5):
         inputphases=[plan.phases[-2],plan.phases[-1]]
         plan.planweeks(inputphases)
     plotter=plot()
