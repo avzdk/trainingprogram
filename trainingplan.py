@@ -226,6 +226,7 @@ if __name__ == "__main__":
     
     a=plan.create_calender()
     phases=plan.load_history()
+<<<<<<< HEAD
        
       
     #plan.planweeks(plan.phases) # hele historikken
@@ -233,6 +234,18 @@ if __name__ == "__main__":
     wantedphases=int((datetime.date(2022,9,25) - history.lastdate).days/14)-1
     for i in range(0,wantedphases):
         inputphases=[plan.phases[-3],plan.phases[-2],plan.phases[-1]]
+=======
+    for p in a: print(p)
+    
+    #print(plan.get_dataframe())
+
+    number_of_activities, distance_sum, distance_max, number_of_phases = plan.get_summery(plan.phases)
+    #print(number_of_activities, distance_sum, distance_max)
+    inputphases=plan.phases  # hele historikken
+    plan.planweeks(plan.phases)
+    for i in range(0,5):
+        inputphases=[plan.phases[-2],plan.phases[-1]]
+>>>>>>> 6a96c36e32215ef34d4da654bb5f9e5aea1df59d
         plan.planweeks(inputphases)
     plan.load_overlap()
 
