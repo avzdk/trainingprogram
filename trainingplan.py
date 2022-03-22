@@ -5,7 +5,7 @@ from traininghistory import Traininglog
 from chart import plot
 import math
 
-INCPCT=1.10     # Hvor meget løbes der ekstra fra uge til uge
+INCPCT=1.08     # Hvor meget løbes der ekstra fra uge til uge
 
 class TrainingPhase():
     '''En fase er 14 dage. Fasen indeholder en liste af aktiviteter
@@ -19,12 +19,13 @@ class TrainingPhase():
         self.activities =[]
         self.incpct=None #procent forøgelse. 
         self.phasenumber =TrainingPhase.next_phasenumber
-        TrainingPhase.next_phasenumber=TrainingPhase.next_phasenumber+1
+        TrainingPhase.next_phasenumber=TrainingPhase.next_phasenumber+1  
 
     def insert(self,activity):
         # checker om datoen passer og indsætter hvis ok
         if activity.date >= self.startdate and activity.date <= self.enddate:
             self.activities.append(activity)
+            activity.inserted=True
             return True
         else: return False  
 
@@ -77,6 +78,23 @@ class TrainingPlan():
         self.phases=[]
 
     def create_calender(self):
+        thismonday=datetime.date.today()+datetime.timedelta(days=-datetime.date.today().weekday())
+        s=self.history.firstdate
+
+        startdate=thismonday-datetime.timedelta(days=14)
+        datelist=[]
+
+        while startdate>=self.history.firstdate:  # kun fulde perioder
+            datelist.insert(0,startdate)
+            startdate=startdate-datetime.timedelta(days=14)
+
+        for startdate in datelist:
+            phase=TrainingPhase(startdate,"done")
+            self.phases.append(phase)            
+        
+        return self.phases
+
+    def create_calender_old(self):
         ''' Danner en "kalender" med de faser der skal til, inkl. historiske fraser markeret med "done"
         Der fyldes ikke data i på nuværende tidspunkt. det er selvstændig funktion.
         '''
@@ -94,8 +112,6 @@ class TrainingPlan():
             self.phases.append(phase)
             startdate=startdate+datetime.timedelta(days=14)
         # fremtidige faser
-
-
         return self.phases
 
     def insert_activity(self,activity):
@@ -133,38 +149,37 @@ class TrainingPlan():
         ''' baseret på en liste af phaser dannes næste phase'''
 
         number_of_activities, distance_sum, distance_max,number_of_phases = plan.get_summery(inputphases)
-        print(f"A SUM MAX={number_of_activities, distance_sum, distance_max}")     
+
         distance_sum_per_phase=distance_sum/number_of_phases
 
         phase_startdate =inputphases[-1].startdate+datetime.timedelta(days=14)
         newphase=TrainingPhase(phase_startdate,'planned')
-        newphase.incpct=1+  (1-(1/(1+math.e**(6-distance_sum_per_phase/10))))/15
-        print(f"INCPCT ={newphase.incpct}")
-        new_sum = distance_sum_per_phase * newphase.incpct * newphase.incpct # 14 dage
-        print(f"lastsum {distance_sum_per_phase}")
-        print(f"newsum {new_sum}")
+        #newphase.incpct=1+  (1-(1/(1+math.e**(6-distance_sum_per_phase/10))))/15
+        newphase.incpct=INCPCT
 
+        new_sum = distance_sum_per_phase * newphase.incpct * newphase.incpct # 14 dage
         distances={}
+
 
         if new_sum<35:
             # 2 + 3 TURE    
-            distances['Lang']=distance_max * newphase.incpct* newphase.incpct*0.98
+            distances['Lang']=distance_max * newphase.incpct* (1+(newphase.incpct-1)*0.4)
             sum_mellem=(new_sum-distances['Lang'])*0.7
             sum_kort=new_sum-distances['Lang']-sum_mellem
             distances['Mellem']=sum_mellem/2
             distances['Kort']=sum_kort/2
             template=[(1,'Kort'),(4,'Mellem'),(7,'Mellem'),(10,'Kort'),(13,'Lang')]
-        elif new_sum<50:
+        elif new_sum<45:
         # 3 + 3 TURE A
-            distances['Lang']=distance_max * newphase.incpct* newphase.incpct*0.98
-            sum_mellem=(new_sum-distances['Lang'])*0.7
+            distances['Lang']=distance_max * newphase.incpct* (1+(newphase.incpct-1)*0.4)
+            sum_mellem=(new_sum-distances['Lang'])*0.6
             sum_kort=new_sum-distances['Lang']-sum_mellem
             distances['Mellem']=sum_mellem/2
             distances['Kort']=sum_kort/3
             template=[(1,'Kort'),(3,'Mellem'),(5,'Kort'),(8,'Mellem'),(10,'Kort'),(13,'Lang')]
         elif new_sum<60:   
         # 3 + 3 TURE B
-            distances['Lang']=distance_max * newphase.incpct* newphase.incpct*0.98
+            distances['Lang']=distance_max * newphase.incpct* (1+(newphase.incpct-1)*0.3)
             sum_mellem=(new_sum-distances['Lang'])*0.7
             sum_kort=new_sum-distances['Lang']-sum_mellem
             distances['Mellem']=sum_mellem/3
@@ -172,52 +187,77 @@ class TrainingPlan():
             template=[(1,'Kort'),(3,'Mellem'),(5,'Mellem'),(8,'Mellem'),(10,'Kort'),(13,'Lang')]
         elif new_sum<70:
             # 4 + 3 TURE
-            distances['Lang']=distance_max * newphase.incpct* newphase.incpct*0.98
-            sum_mellem=(new_sum-distances['Lang'])*0.7
+            distances['Lang']=distance_max * newphase.incpct* (1+(newphase.incpct-1)*0.2)
+            sum_mellem=(new_sum-distances['Lang'])*0.6
             sum_kort=new_sum-distances['Lang']-sum_mellem
             distances['Mellem']=sum_mellem/3
             distances['Kort']=sum_kort/3
             template=[(1,'Kort'),(3,'Mellem'),(5,'Kort'),(6,'Mellem'),(8,'Mellem'),(10,'Kort'),(13,'Lang')]
         else:
             # 4 + 4 TURE
-            distances['Lang']=distance_max * newphase.incpct* newphase.incpct*0.98
+            distances['Lang']=distance_max * newphase.incpct* (1+(newphase.incpct-1)*0.1)
             sum_mellem=(new_sum-distances['Lang'])*0.7
             sum_kort=new_sum-distances['Lang']-sum_mellem
             distances['Mellem']=sum_mellem/4
-            distances['Kort']=sum_kort/3
-            template=[(1,'Kort'),(3,'Mellem'),(5,'Mellem'),(6,'Kort'),(7,'Mellem'),(9,'Mellem'),(10,'Kort'),(13,'Lang')]
+            distances['Kort']=sum_kort/2
+            template=[(3,'Mellem'),(5,'Mellem'),(6,'Kort'),(7,'Mellem'),(9,'Mellem'),(10,'Kort'),(13,'Lang')]
 
-        
-
-        new_activities=[]
         for t in template:
             new_activity=Activity(phase_startdate+datetime.timedelta(days=t[0]-1), distances[t[1]]  ,trainingtype=t[1])
             newphase.insert(new_activity)
         self.phases.append(newphase)
-
+    
+    def load_overlap(self):
+        '''Indsætter hele historikken i den oprettede kalender
+        '''
+        for activity in self.history.activities: 
+            if activity.inserted==False:
+                self.insert_activity(activity)
+        return self.phases
 
 
 if __name__ == "__main__":
     FILENAME="./testdata/allan202201.csv"
     history=Traininglog()
-    history.readcsvfile(FILENAME)
+    #history.readcsvfile(FILENAME)
+    history.readstrava(30)
     #for i in history.activities: print(i)
     plan=TrainingPlan(history)
     
     a=plan.create_calender()
     phases=plan.load_history()
-    for p in a: print(p)
-    
-    #print(plan.get_dataframe())
-
-    number_of_activities, distance_sum, distance_max, number_of_phases = plan.get_summery(plan.phases)
-    #print(number_of_activities, distance_sum, distance_max)
-    inputphases=plan.phases  # hele historikken
-    plan.planweeks(plan.phases)
-    for i in range(0,10):
-        inputphases=[plan.phases[-2],plan.phases[-1]]
+       
+      
+    #plan.planweeks(plan.phases) # hele historikken
+    #plan.planweeks(plan.phases) # hele historikken
+    wantedphases=int((datetime.date(2022,9,25) - history.lastdate).days/14)-1
+    for i in range(0,wantedphases):
+        inputphases=[plan.phases[-3],plan.phases[-2],plan.phases[-1]]
         plan.planweeks(inputphases)
+    plan.load_overlap()
+
+    
     plotter=plot()
     print("RESULTAT----------------")
-    print(plan.get_dataframe().to_string())
-    plotter.drawByDate(plan.get_dataframe())
+    df=plan.get_dataframe()
+    print(df.to_string())
+    summarydf=df.copy()
+    summarydf['maxdist']=df['distance']   # ekstra datakolonne til max
+    resume=summarydf.groupby(['phase_number']).agg({'distance':'sum','maxdist':'max',}).reset_index()
+    print(resume.to_string())
+    
+    #plotter.drawByDate(plan.get_dataframe())
+    plotter.drawByPhase(plan.get_dataframe())
+    #plotter.drawSummary(resume)
+
+    last_dist=None
+    for p in plan.phases:
+        number_of_activities, distance_sum, distance_max = p.get_summery()
+        if last_dist!=None:
+            print(f"PCT Increase {(distance_sum-last_dist)/last_dist}")
+        last_dist=distance_sum
+
+
+
+
+

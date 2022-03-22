@@ -7,6 +7,7 @@ class Activity():
         self.distance=distance
         self.time = time
         self.trainingtype=trainingtype
+        self.inserted=False
 
     @property
     def isoYW(self): #isoYear and isoWeek

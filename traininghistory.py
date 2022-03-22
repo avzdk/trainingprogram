@@ -1,7 +1,7 @@
 import csv
 import datetime
 from activity import Activity
-
+from strava import Strava
 
 class Traininglog():
 
@@ -19,6 +19,20 @@ class Traininglog():
     def lastdate(self):
         return self.activities[-1].date
 
+    def readstrava(self,pagesize=20):
+        client=Strava()
+        client.getToken()
+        activities = client.getActivities(pagesize)
+        for a in activities:
+            if a['type']=='Run':
+                date=datetime.datetime.strptime(a['start_date'][0:10], "%Y-%m-%d").date()
+                distance=float(a['distance'])/1000
+                time=float(a['moving_time'])/60
+                activity=Activity(date,distance,time)        
+                self.activities.append(activity)
+        self._sortlist()
+        return self.activities
+
     
     def readcsvfile(self,filename):
         reader = csv.reader(open(filename), delimiter=";")
@@ -35,7 +49,8 @@ class Traininglog():
 if __name__ == "__main__":
     FILENAME="./testdata/5kmx3.csv"
     traininglog=Traininglog()
-    traininglog.readcsvfile(FILENAME)
+    #traininglog.readcsvfile(FILENAME)
+    traininglog.readstrava(20)
     for i in traininglog.activities:
         print(i)
     print(traininglog.firstdate)
