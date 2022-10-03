@@ -8,6 +8,7 @@ class Activity():
         self.time = time
         self.trainingtype=trainingtype
         self.inserted=False
+        self.combined=False
 
     @property
     def isoYW(self): #isoYear and isoWeek
@@ -18,6 +19,10 @@ class Activity():
         d=self.date
         d+= datetime.timedelta(days=-self.date.weekday()) # mandag er 0
         return d
+
+    def combine(self,act):
+        self.distance=self.distance+act.distance
+        self.time = self.time + act.time
 
     def get_dataframe(self):
         ''' danner en df med én række

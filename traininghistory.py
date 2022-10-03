@@ -11,6 +11,18 @@ class Traininglog():
     def _sortlist(self):
         self.activities.sort(key=lambda x: x.date)
 
+
+    def groupbydate(self):
+        
+        for i in range(1,len(self.activities)):
+            if self.activities[i].date == self.activities[i-1].date:
+                self.activities[i].combine(self.activities[i-1])
+                self.activities[i-1].combined=True   # markeret til sletning.add()
+        filtered = filter(lambda x: x.combined==False ,self.activities)    
+        self.activities=list(filtered)
+            
+
+
     @property
     def firstdate(self):
         return self.activities[0].date
@@ -46,12 +58,31 @@ class Traininglog():
         self._sortlist()
         return self.activities
 
+    def distance_list(self):
+        list=[]
+        for i in traininglog.activities:
+            list.append(i.distance)
+        return list
+
+
+
+    def summary(self):
+        days=abs((traininglog.lastdate - traininglog.firstdate).days)+1
+        activitiecount=len(self.activities)
+        weeklyruns=(activitiecount/days)*7
+        print(f"SUMMARY: Baseret på {days} dage og {activitiecount} ture svarende til {weeklyruns} ture pr. uge.")
+        print(f"SUMMARY: Længste {max(self.distance_list())} og korteste {min(self.distance_list())}")
+        
+        
+
 if __name__ == "__main__":
     FILENAME="./testdata/5kmx3.csv"
     traininglog=Traininglog()
-    #traininglog.readcsvfile(FILENAME)
+    #traininglog.readcsvfile(FILENAME)pip in
     traininglog.readstrava(20)
+    traininglog.groupbydate()
     for i in traininglog.activities:
         print(i)
-    print(traininglog.firstdate)
-    print(traininglog.lastdate)
+    print(f"First date  in data {traininglog.firstdate}")
+    print(f"First date  in data {traininglog.lastdate}")
+    traininglog.summary()

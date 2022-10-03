@@ -221,6 +221,7 @@ if __name__ == "__main__":
     history=Traininglog()
     #history.readcsvfile(FILENAME)
     history.readstrava(30)
+    history.groupbydate()
     #for i in history.activities: print(i)
     plan=TrainingPlan(history)
     
@@ -245,9 +246,10 @@ if __name__ == "__main__":
     resume=summarydf.groupby(['phase_number']).agg({'distance':'sum','maxdist':'max',}).reset_index()
     print(resume.to_string())
     
-    #plotter.drawByDate(plan.get_dataframe())
+    plotter.drawByDate(plan.get_dataframe())
     plotter.drawByPhase(plan.get_dataframe())
-    #plotter.drawSummary(resume)
+    plotter.drawByWeek(plan.get_dataframe())
+    plotter.drawSummary(resume)
 
     last_dist=None
     for p in plan.phases:
