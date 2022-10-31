@@ -8,7 +8,7 @@ Baseret på den antagelse at løberen så følger denne plan dannes den efterfø
 Dvs. at planen bliver en del af input til næste plan.
 
 `
-input H3,H2,H1 -> P0
-input H2,H1, P0 -> P1
-input H1, P0, P1 -> P2 
+    input H3,H2,H1 -> P0
+    input H2,H1, P0 -> P1
+    input H1, P0, P1 -> P2 
 `
